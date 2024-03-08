@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -56,13 +55,8 @@ func (r *Result) Draw() {
 
 func (r *Result) Update(e tcell.Event) (next Drawable) {
 	key := e.(*tcell.EventKey)
-	switch key.Key() {
-	case tcell.KeyEnter:
+	if key.Key() == tcell.KeyEnter {
 		return NewMenu(r.screen)
-	default:
-		if key.Rune() == 'q' {
-			os.Exit(0)
-		}
 	}
 	return nil
 }

@@ -6,11 +6,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-// main yellow #E2B714
-// text to be typed #646669
-// wrong text #CA4754
-// correct text #D1D0C5
-
 var (
 	BackgroundColor    = tcell.Color239
 	AppTextStyle       = tcell.StyleDefault.Background(BackgroundColor).Foreground(tcell.Color252)

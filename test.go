@@ -167,6 +167,7 @@ func (t *Test) Update(event tcell.Event) Drawable {
 }
 
 func (t *Test) finish() Drawable {
+	// TODO: check word by word
 	if t.txt == t.typedTxt || t.words == t.typedWords ||
 		(t.kind == TEST_TIME && time.Now().After(t.startTime.Add(time.Second*time.Duration(t.config.Duration)))) {
 		duration := time.Since(t.startTime)
@@ -198,7 +199,7 @@ func (t *Test) generateText() {
 		t.txt = generateQuote(t.config)
 	} else {
 		if t.config.Words == 0 {
-			t.config.Words = 300
+			t.config.Words = 100
 		}
 		t.txt = generateWords(t.config)
 	}
