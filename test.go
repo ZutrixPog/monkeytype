@@ -219,7 +219,7 @@ func (t *Test) generateText() {
 		t.txt = generateQuote(t.config)
 	} else {
 		if t.config.Words == 0 {
-			t.config.Words = 100
+			t.config.Words = t.config.Duration + t.config.Duration/2
 		}
 		t.txt = generateWords(t.config)
 	}
