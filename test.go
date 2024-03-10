@@ -1,20 +1,38 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
-	"io"
 	"math/rand"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
 
+//go:embed res/words.txt
+var words string
+
+//go:embed res/long_quotes.txt
+var longQuotes string
+
+//go:embed res/medium_quotes.txt
+var mediumQuotes string
+
+//go:embed res/short_quotes.txt
+var shortQuotes string
+
 const (
 	TEST_WORD int = iota
 	TEST_TIME
 	TEST_QUOTE
+)
+
+const (
+	MAX_NUM             = 100000
+	NUM_FACTOR          = 8
+	PUNCTUATIONS_FACTOR = 4
+	WRAPPER_FACTOR      = 7
 )
 
 var QuoteTypes = []string{"short", "medium", "long"}
@@ -140,6 +158,9 @@ func (t *Test) Update(event tcell.Event) Drawable {
 	key := event.(*tcell.EventKey)
 	if key.Key() == tcell.KeyRune {
 		if key.Rune() == ' ' {
+			for len(t.typedTxt) < len(t.txt) && t.txt[len(t.typedTxt)] != ' ' {
+				t.typedTxt += "|"
+			}
 			t.typedWords += 1
 		}
 		dt := time.Time{}
@@ -167,7 +188,6 @@ func (t *Test) Update(event tcell.Event) Drawable {
 }
 
 func (t *Test) finish() Drawable {
-	// TODO: check word by word
 	if t.txt == t.typedTxt || t.words == t.typedWords ||
 		(t.kind == TEST_TIME && time.Now().After(t.startTime.Add(time.Second*time.Duration(t.config.Duration)))) {
 		duration := time.Since(t.startTime)
@@ -209,15 +229,14 @@ func (t *Test) generateText() {
 
 func generateQuote(conf Config) string {
 	categoryToFile := map[string]string{
-		"short":  "./res/short_quotes.txt",
-		"medium": "./res/medium_quotes.txt",
-		"long":   "./res/long_quotes.txt",
+		"short":  shortQuotes,
+		"medium": mediumQuotes,
+		"long":   longQuotes,
 	}
 
-	fd, _ := os.Open(categoryToFile[QuoteTypes[conf.QuoteLen]])
-	fileContent, _ := io.ReadAll(fd)
+	content := categoryToFile[QuoteTypes[conf.QuoteLen]]
 
-	quotes := strings.Split(string(fileContent), "\n")
+	quotes := strings.Split(string(content), "\n")
 	var nonEmptyQuotes []string
 	for _, quote := range quotes {
 		if quote != "" {
@@ -226,23 +245,54 @@ func generateQuote(conf Config) string {
 	}
 
 	selectedQuote := nonEmptyQuotes[rand.Intn(len(nonEmptyQuotes))]
+	selectedQuote = strings.TrimSpace(selectedQuote)
 	return selectedQuote
 }
 
 func generateWords(conf Config) string {
-	fd, err := os.Open("./res/words.txt")
-	if err != nil {
-		panic(err)
-	}
-	fileContent, _ := io.ReadAll(fd)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	words := strings.Fields(string(fileContent))
-	rand.Shuffle(len(words), func(i, j int) {
+	words := strings.Fields(words)
+	r.Shuffle(len(words), func(i, j int) {
 		words[i], words[j] = words[j], words[i]
 	})
 
 	selectedWords := words[:conf.Words]
+
+	if conf.Punctuation {
+		punctuation := []string{".", ",", "!", "?", ";", ":"}
+		indexes := generateRandomNumbers(conf.Words/PUNCTUATIONS_FACTOR, 0, conf.Words-1)
+		for _, i := range indexes {
+			selectedWords[i] += punctuation[r.Intn(len(punctuation))]
+		}
+
+		wrappers := []string{"[]", "()", "{}", `""`, `''`}
+		indexes = generateRandomNumbers(conf.Words/WRAPPER_FACTOR, 0, conf.Words-1)
+		for _, i := range indexes {
+			wrap := wrappers[r.Intn(len(wrappers))]
+			selectedWords[i] = fmt.Sprintf("%c%s%c", wrap[0], selectedWords[i], wrap[1])
+		}
+	}
+
+	if conf.Number {
+		indexes := generateRandomNumbers(conf.Words/NUM_FACTOR, 0, conf.Words-1)
+		for _, i := range indexes {
+			selectedWords[i] = fmt.Sprintf("%d", rand.Intn(MAX_NUM))
+		}
+	}
+
 	result := strings.Join(selectedWords, " ")
 
 	return result
+}
+
+func generateRandomNumbers(n, min, max int) []int {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	randomNumbers := make([]int, n)
+	for i := 0; i < n; i++ {
+		randomNumbers[i] = r.Intn(max-min+1) + min
+	}
+
+	return randomNumbers
 }

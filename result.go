@@ -49,7 +49,7 @@ func (r *Result) Draw() {
 	drawTitle(r.screen, RES_TITLE)
 	drawDashedBox(r.screen, r.wpm, r.accuracy, int(r.metrics.duration.Seconds()), r.rawWpm)
 
-	txt := "press enter to continue or q to exit..."
+	txt := "press enter to continue or esc to exit..."
 	drawTextCentered(r.screen, len(txt), 15, txt, AppTextStyle)
 }
 
@@ -68,14 +68,14 @@ func (r *Result) calcWpm() (int, int) {
 }
 
 func (r *Result) calcAccuracy() int {
-	return int(float64(r.metrics.correctChars) / float64(r.metrics.allChars) * 100)
+	return int(float64(r.metrics.correctChars) / float64(r.metrics.allChars) * 100.0)
 }
 
 func drawDashedBox(screen tcell.Screen, wpm, accuracy, duration, raw int) {
 	swidth, _ := screen.Size()
 	boxLen := swidth / 2
 	startWidth := (swidth - boxLen) / 2
-	space := 20
+	space := boxLen / 3
 
 	for i := startWidth; i < startWidth+boxLen; i += 2 {
 		screen.SetContent(i, 9, tcell.RuneHLine, nil, AppYellowTextStyle)
@@ -87,7 +87,7 @@ func drawDashedBox(screen tcell.Screen, wpm, accuracy, duration, raw int) {
 	}
 
 	af := "Accuracy: "
-	av := fmt.Sprintf("%d", accuracy) + " %"
+	av := fmt.Sprintf("%d", accuracy) + "%"
 	wf := "WPM: "
 	wv := fmt.Sprintf("%d", wpm)
 	tf := "Time: "
