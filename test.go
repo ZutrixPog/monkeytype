@@ -33,6 +33,7 @@ const (
 	NUM_FACTOR          = 8
 	PUNCTUATIONS_FACTOR = 4
 	WRAPPER_FACTOR      = 7
+	WRONG_CHAR          = "|"
 )
 
 var QuoteTypes = []string{"short", "medium", "long"}
@@ -120,6 +121,9 @@ func (t *Test) Draw() {
 		if len(typedWord) > len(targetWord) {
 			extraChars := typedWord[len(targetWord):]
 			for _, ch := range extraChars {
+				if ch == ' ' || string(ch) == WRONG_CHAR {
+					break
+				}
 				drawFn(byte(ch), WrongTextStyle)
 			}
 		}
@@ -159,7 +163,7 @@ func (t *Test) Update(event tcell.Event) Drawable {
 	if key.Key() == tcell.KeyRune {
 		if key.Rune() == ' ' {
 			for len(t.typedTxt) < len(t.txt) && t.txt[len(t.typedTxt)] != ' ' {
-				t.typedTxt += "|"
+				t.typedTxt += WRONG_CHAR
 			}
 			t.typedWords += 1
 		}
