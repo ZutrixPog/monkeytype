@@ -66,7 +66,7 @@ func main() {
 			currElement.Draw()
 			s.Sync()
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+			if ev.Key() == tcell.KeyEscape || (ev.Key() == tcell.KeyRune && ev.Rune() == 'q') {
 				return
 			} else if ev.Key() == tcell.KeyCtrlL {
 				s.Sync()

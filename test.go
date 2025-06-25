@@ -198,20 +198,23 @@ func (t *Test) finish() Drawable {
 		if t.kind == TEST_TIME {
 			duration = time.Duration(t.config.Duration) * time.Second
 		}
+
+		correctWords := strings.Split(t.txt, " ")
+		typedWords := strings.Split(t.typedTxt, " ")
+
 		correct := 0
-		for i := 0; i < len(t.typedTxt); i++ {
-			if i >= len(t.txt) {
-				break
-			}
-			if t.typedTxt[i] == t.txt[i] {
-				correct += 1
+		for i := 0; i < len(correctWords); i++ {
+			for j := 0; j < len(correctWords[i]); j++ {
+				if correctWords[i][j] == typedWords[i][j] {
+					correct += 1
+				}
 			}
 		}
 
 		return NewResult(t.screen, Metric{
 			duration:     duration,
-			allChars:     len(t.typedTxt),
-			correctChars: correct,
+			allChars:     len(t.txt),
+			correctChars: correct + len(correctWords) - 1,
 		})
 	}
 
